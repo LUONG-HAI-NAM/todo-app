@@ -27,23 +27,40 @@ todoForm.onsubmit = (e) => {
   localStorage.setItem("tasks", JSON.stringify(tasks));
   renderTasks();
   taskName.value = "";
+  taskName.focus();
 };
 
-function renderTasks() {
-    const html = tasks.map(task => {
-        if (task.name) {
-            return `
-                <li class="task-item${task.isCompleted ? ' completed' : ''}">
-                    <span class="task-title">${task.name}</span>
-                    <div class="task-action">
-                        <button class="task-btn edit">Edit</button>
-                        <button class="task-btn done">Mark as done</button>
-                        <button class="task-btn delete">Delete</button>
-                    </div>
-                </li>
-            `;
-        }
-    }).join("");
+function escapeHtml(str) {             // chong XSS
+    const escape = document.createElement("div");
+    escape.innerText = str;
+    const result = escape.innerHTML;
+    escape.innerHTML = "";
+    return result;  
+}
 
-    tasksList.innerHTML = html;
+function renderTasks() {
+      // kiem tra de hien thi danh sach trong
+      if (tasks.length === 0) {
+          tasksList.innerHTML = "<li>Không có công việc nào!</li>";
+          return; // thoat ham
+      }
+
+
+      // co du lieu task thi render
+
+      tasksList.innerHTML = "";
+      tasks.forEach((task) => {
+        const item = document.createElement("li");
+        item.className = `task-item${task.isCompleted ? ' completed' : ''}`;
+        item.innerHTML = `
+          <span class="task-title">${escapeHtml(task.name)}</span>
+          <div class="task-action">
+              <button class="task-btn edit">Edit</button>
+              <button class="task-btn done">Mark as done</button>
+              <button class="task-btn delete">Delete</button>
+          </div>
+      `;
+        tasksList.appendChild(item);
+      });
   }
+renderTasks();
